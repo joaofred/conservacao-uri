@@ -26,7 +26,7 @@ from statsmodels.sandbox.stats.runs import mcnemar
 ################################################################################################
 '''
 
-df = pd.read_csv("/home/fred/Dropbox/CC/DBs/URI/SOURCE/URI_TOTAL_DATA.csv")
+df = pd.read_csv("./URI_TOTAL_DATA.csv")
 
 ###########################################################
 
@@ -164,8 +164,27 @@ dfcatemelt.columns = ['KEY', 'EXAME', 'LOCAL', 'HORA', 'MEDIDA']
 #               data=dfcatemelt[dfcatemelt.EXAME == "BLD"], 
 #               order = ["neg", "C1", "C2", "C3"])
 
+def plotsbarra(exames = ["BLD", "BIL", "UBG", "KET", "GLU", "PRO", "NIT", "LEU","PH"]):
+    for i in exames:
+        filename = "barplot"+i+".png"        
+        ordem = sorted(dfcatemelt[dfcatemelt.EXAME==i].MEDIDA.unique())
+        if "neg" in ordem:
+            ordem.remove("neg")
+            ordem.insert(0, "neg")
+        print(":: para",i)
+        sns.factorplot(x="MEDIDA", kind="count", hue="HORA", 
+                       data=dfcatemelt[dfcatemelt.EXAME == i], 
+                       order = ordem)
+        plt.savefig(filename)
 
 
+def procurarduplicatas():
+    contador = 0
+    for i in sorted(df.KEY.unique()):
+        if len(df.KEY[df.KEY == i]) != 44: 
+            print(":: Duplicata em",i)
+        contador += 1
+    print("total de contagens feitas:",contador)
 
 '''
 ################################################################################################
@@ -444,7 +463,7 @@ def checarkappa_reto(t=["H4", "H8", "H12", "H24"]):
 
 def checarkappa_csv_cis():
     t = ["H0", "H4", "H8", "H12", "H24"]
-    relatorio = csv.writer(open("/home/fred/Dropbox/CC/DBs/URI/SOURCE/Relatórios/resultados_kappa_cis.csv", 'w'))
+    relatorio = csv.writer(open("./resultados_kappa_cis.csv", 'w'))
     relatorio.writerow(["", "H0", "H4", "H8", "H12", "H24"])
     for i in a_indice_cruzes:
         loc, exa = list(i["LOCAL"])[0], list(i["EXAME"])[0]
@@ -457,7 +476,7 @@ def checarkappa_csv_cis():
 
 def checarspearman_csv_cis():
     t = ["H0", "H4", "H8", "H12", "H24"]
-    relatorio = csv.writer(open("/home/fred/Dropbox/CC/DBs/URI/SOURCE/Relatórios/resultados_spearman_cis.csv", 'w'))
+    relatorio = csv.writer(open("./resultados_spearman_cis.csv", 'w'))
     relatorio.writerow(["", "H0", "H4", "H8", "H12", "H24"])
 
     lista = [rbc_amb, rbc_gel, muc_amb, muc_gel, caoxd_amb, caoxd_gel, hya_amb, hya_gel, bac_amb, bac_gel, 
