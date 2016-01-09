@@ -186,10 +186,6 @@ def procurarduplicatas():
         contador += 1
     print("total de contagens feitas:",contador)
 
-
-
-
-
 '''
 ################################################################################################
 
@@ -198,9 +194,6 @@ def procurarduplicatas():
 ################################################################################################
 '''
 def namestr(obj, namespace=globals()): return([name for name in namespace if namespace[name] is obj][0])
-
-_dicsed = {"RBC": 5, "WBC": 5, "CAOXD": 1.82, "TRI": 1.82, "AMO": 1.82,"HYA": 0.2, 
-           "EPI": 0.37, "YEA": 0.2, "BAC": 8.33, "MUC": 25, "PAT": 0.3, "URI": 1.82}
 
 _dic_cruzes = {"neg": 0, "pos": 1, "C1" : 1, "C2" : 2, "C3" : 3, "C4" : 4}
 __l = "................................................................."
@@ -232,42 +225,6 @@ _dic_discreto = {namestr(ph_amb):"pH", namestr(ph_gel): "pH", namestr(sg_amb):"D
 ################################################################################################
 '''
 fontetamanho = 20
-
-def filtrased1(data, linha):
-    amostra = data._slice(slice(linha,linha+1))
-    if list(amostra.EXAME)[0] in _dicsed:
-        if list(amostra.MEDIDA)[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
-        elif list(amostra.MEDIDA)[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
-        else: print("deu erro em", amostra.index)
-    else: return(list(amostra.MEDIDA)[0])
-
-def filtrasedmini1(data, linha, horario):
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",linha)
-    #amostra = data._slice(slice(linha,linha+1))
-    amostra = data[horario][linha]
-    if list(data.EXAME)[0] in _dicsed:
-        print("OK!")
-        if list(amostra[horario])[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
-        elif list(amostra[horario])[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
-        else: print("deu erro em", amostra.index)
-    else: return(list(amostra[hora])[0])
-
-filtrasedmini1(yea_amb, 42, "H0")
-
-def filtrased(data):
-    for i in data.index:
-        data.MEDIDA[i] = filtrased1(data, i)
-    return(data)
-
-def filtrasedmini(data):
-    for indice in data.index[0:10]:
-        for hora in ["H0", "H4", "H8", "H12", "H24"]:    
-            data[hora][indice] = filtrasedmini1(data, indice, hora)
-    return(data)
-
-
-
-#yea_amb = filtrasedmini(yea_amb)
 
 def namestr(obj, namespace=globals()): return([name for name in namespace if namespace[name] is obj][0])
 
@@ -516,23 +473,6 @@ def checarkappa_csv_cis():
             k = [i["H0"], i[v]]
             novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
         relatorio.writerow(novalinha)
-
-dfcontmelt2 = pd.read_csv("./posneg_sed.csv")
-
-def checarkappa_csv_cis2(df=dfcontmelt2):
-    t = ["H0", "H4", "H8", "H12", "H24"]
-    relatorio = csv.writer(open("./resultados_kappa_cis2.csv", 'w'))
-    relatorio.writerow(["", "H0", "H4", "H8", "H12", "H24"])
-    for i in df:
-        loc, exa = list(i["LOCAL"])[0], list(i["EXAME"])[0]
-        abertura = exa+" "+loc+" | H0"
-        novalinha = [abertura]
-        for v in t:
-            k = [i["H0"], i[v]]
-            novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
-        relatorio.writerow(novalinha)
-
-
 
 def checarspearman_csv_cis():
     t = ["H0", "H4", "H8", "H12", "H24"]
