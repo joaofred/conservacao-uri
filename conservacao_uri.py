@@ -187,9 +187,6 @@ def procurarduplicatas():
     print("total de contagens feitas:",contador)
 
 
-
-
-
 '''
 ################################################################################################
 
@@ -233,37 +230,39 @@ _dic_discreto = {namestr(ph_amb):"pH", namestr(ph_gel): "pH", namestr(sg_amb):"D
 '''
 fontetamanho = 20
 
-def filtrased1(data, linha):
-    amostra = data._slice(slice(linha,linha+1))
-    if list(amostra.EXAME)[0] in _dicsed:
-        if list(amostra.MEDIDA)[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
-        elif list(amostra.MEDIDA)[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
-        else: print("deu erro em", amostra.index)
-    else: return(list(amostra.MEDIDA)[0])
 
-def filtrasedmini1(data, linha, horario):
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",linha)
-    #amostra = data._slice(slice(linha,linha+1))
-    amostra = data[horario][linha]
-    if list(data.EXAME)[0] in _dicsed:
-        print("OK!")
-        if list(amostra[horario])[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
-        elif list(amostra[horario])[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
-        else: print("deu erro em", amostra.index)
-    else: return(list(amostra[hora])[0])
 
-#filtrasedmini1(yea_amb, 42, "H0")
+df2 = df[0:45].copy()
+#dfposneg = df.copy()
+dfposneg = pd.read_csv("./URI_TOTAL_POSNEG.csv")
+def isfloat(value):
+    try:
+        float(value)
+        return True
+    except: 
+        return False
 
-def filtrased(data):
-    for i in data.index:
-        data.MEDIDA[i] = filtrased1(data, i)
+
+def filtrasedimento(data):
+    tamanho = len(data)
+    for linha in data.index:
+        print("fazendo a linha", linha, "de",tamanho)                
+        for coluna in ["H0", "H4", "H8", "H12", "H24"]:
+            if data.loc[linha,"EXAME"] in _dicsed:            
+                if isfloat(data.loc[linha,coluna]):
+                    if float(data.loc[linha,coluna]) < _dicsed[data.loc[linha,"EXAME"]]: data.loc[linha,coluna] ="neg"
+                    elif float(data.loc[linha,coluna]) >= _dicsed[data.loc[linha,"EXAME"]]: data.loc[linha,coluna] ="pos"
+                    else: print("deu erro em", linha)
+                else: data.loc[linha,coluna] = data.loc[linha,coluna]
+            else: pass
+            
     return(data)
 
-def filtrasedmini(data):
-    for indice in data.index[0:10]:
-        for hora in ["H0", "H4", "H8", "H12", "H24"]:    
-            data[hora][indice] = filtrasedmini1(data, indice, hora)
-    return(data)
+#filtrasedimento(dfposneg)
+
+
+
+
 
 
 
@@ -377,44 +376,6 @@ def checar_normalidade():
         if pv > 0.05: p = "***"
         print(list(Series(i["EXAME"]))[0], "", list(Series(i["LOCAL"]))[0],"| Curtose:",ku,"; Valor de p:",pv, p)
 
-################################################################################################
-
-def checarmcnemar1(t="H24"):
-    print()
-    print(__l)
-    print()
-    print("Avaliação de McNemar",t,"(GEL) x",t,"(AMB) para os diversos exames")    
-    print()
-    print(__l)
-    for i in a_indice_cruzes_pares:
-        p, p1 = i[0], ""
-        k = [i[0][t], i[1][t]]
-        mc = mcnemar(mycontingency(k, "neg"))
-        if mc[1] < 0.05: p1 = "***"
-        print("RESULTADOS PARA ", list(Series(p["EXAME"]))[0], ":", mc[0],"(X²); ",mc[1],"(valor de p)", p1)
-    print(__l)
-
-def checarmcnemar2(t="H24"):
-    print()
-    print(__l)
-    print()
-    print("Avaliação de McNemar H0 x",t,"para os diversos exames")    
-    print()
-    print(__l)
-    for i in a_indice_cruzes_pares:        
-        p, p1, p2 = i[0], "", ""
-        k = [i[0]["H0"], i[0][t]]
-        l = [i[1]["H0"], i[1][t]]
-        mc1 = mcnemar(mycontingency(k, "neg"))        
-        mc2 = mcnemar(mycontingency(l, "neg"))
-        if mc1[1] < 0.05: p1 = "***"
-        if mc2[1] < 0.05: p2 = "***"
-        print("RESULTADOS PARA", list(Series(p["EXAME"]))[0], "(AMB):", 
-                                              mc1[0],"(X²); ",mc1[1],"(valor de p)", p1)
-        print("RESULTADOS PARA", list(Series(p["EXAME"]))[0], "(GEL):",
-                                              mc2[0],"(X²); ",mc2[1],"(valor de p)", p2)
-    print(__l)
-
 
 ################################################################################################
 
@@ -519,6 +480,7 @@ def checarkappa_csv_cis():
 
 dfcontmelt2 = pd.read_csv("./posneg_sed.csv")
 
+'''
 def checarkappa_csv_cis2(df=dfcontmelt2):
     t = ["H0", "H4", "H8", "H12", "H24"]
     relatorio = csv.writer(open("./resultados_kappa_cis2.csv", 'w'))
@@ -531,10 +493,46 @@ def checarkappa_csv_cis2(df=dfcontmelt2):
             k = [i["H0"], i[v]]
             novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
         relatorio.writerow(novalinha)
+'''
+
+def geraposneg(data = dfposneg):
+    data = data[~((data.EXAME == "SG") | (data.EXAME == "PH"))]    
+    listaposneg = []
+    for exame in data.EXAME.unique():
+        for local in data.LOCAL.unique():
+            listaposneg.append(data[(data.EXAME==exame) & (data.LOCAL == local)])
+    return(listaposneg)
+
+def relatorio_kappa_csv():
+    t = ["H0", "H4", "H8", "H12", "H24"]
+
+    relatorio = csv.writer(open("./resultados_kappa_cis(pn).csv", 'w'))
+    relatorio.writerow(["", "H0", "H4", "H8", "H12", "H24"])
+    for i in geraposneg():
+        loc, exa = list(i["LOCAL"])[0], list(i["EXAME"])[0]
+        abertura = exa+" "+loc+" | H0"
+        novalinha = [abertura]
+        for v in t:
+            k = [i["H0"], i[v]]
+            novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
+        relatorio.writerow(novalinha)
 
 
 
-def checarspearman_csv_cis():
+
+
+
+
+
+
+
+
+
+
+
+
+
+def relatorio_spearman_csv():
     t = ["H0", "H4", "H8", "H12", "H24"]
     relatorio = csv.writer(open("./resultados_spearman_cis.csv", 'w'))
     relatorio.writerow(["", "H0", "H4", "H8", "H12", "H24"])
@@ -638,8 +636,8 @@ def checarspearman_todos():
 
 
 def relatorios():
-    checarspearman_csv_cis()
-    checarkappa_csv_cis()
+    relatorio_spearman_csv()
+    relatorio_kappa_csv()
 
 '''
 ################################################################################################
@@ -681,4 +679,93 @@ grafico_j([wbc_amb["H0"], wbc_amb["H4"]], titulox = "Temperatura Ambiente (0h)",
 ################################################################################################
                                            OUTROS
 ################################################################################################
+'''
+
+
+
+'''################################################################################################
+
+def checarmcnemar1(t="H24"):
+    print()
+    print(__l)
+    print()
+    print("Avaliação de McNemar",t,"(GEL) x",t,"(AMB) para os diversos exames")    
+    print()
+    print(__l)
+    for i in a_indice_cruzes_pares:
+        p, p1 = i[0], ""
+        k = [i[0][t], i[1][t]]
+        mc = mcnemar(mycontingency(k, "neg"))
+        if mc[1] < 0.05: p1 = "***"
+        print("RESULTADOS PARA ", list(Series(p["EXAME"]))[0], ":", mc[0],"(X²); ",mc[1],"(valor de p)", p1)
+    print(__l)
+
+def checarmcnemar2(t="H24"):
+    print()
+    print(__l)
+    print()
+    print("Avaliação de McNemar H0 x",t,"para os diversos exames")    
+    print()
+    print(__l)
+    for i in a_indice_cruzes_pares:        
+        p, p1, p2 = i[0], "", ""
+        k = [i[0]["H0"], i[0][t]]
+        l = [i[1]["H0"], i[1][t]]
+        mc1 = mcnemar(mycontingency(k, "neg"))        
+        mc2 = mcnemar(mycontingency(l, "neg"))
+        if mc1[1] < 0.05: p1 = "***"
+        if mc2[1] < 0.05: p2 = "***"
+        print("RESULTADOS PARA", list(Series(p["EXAME"]))[0], "(AMB):", 
+                                              mc1[0],"(X²); ",mc1[1],"(valor de p)", p1)
+        print("RESULTADOS PARA", list(Series(p["EXAME"]))[0], "(GEL):",
+                                              mc2[0],"(X²); ",mc2[1],"(valor de p)", p2)
+    print(__l)
+
+
+
+
+
+def filtrased1(data, linha):
+    amostra = data._slice(slice(linha,linha+1))
+    if list(amostra.EXAME)[0] in _dicsed:
+        if list(amostra.MEDIDA)[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
+        elif list(amostra.MEDIDA)[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
+        else: print("deu erro em", amostra.index)
+    else: return(list(amostra.MEDIDA)[0])
+
+def filtrasedmini1(data, linha, horario):
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",linha)
+    #amostra = data._slice(slice(linha,linha+1))
+    amostra = data[horario][linha]
+    if list(data.EXAME)[0] in _dicsed:
+        print("OK!")
+        if list(amostra[horario])[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
+        elif list(amostra[horario])[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
+        else: print("deu erro em", amostra.index)
+    else: return(list(amostra[hora])[0])
+
+#filtrasedmini1(yea_amb, 42, "H0")
+
+def filtrased(data):
+    for i in data.index:
+        data.MEDIDA[i] = filtrased1(data, i)
+    return(data)
+
+def filtrasedmini(data):
+    for indice in data.index[0:10]:
+        for hora in ["H0", "H4", "H8", "H12", "H24"]:    
+            data[hora][indice] = filtrasedmini1(data, indice, hora)
+    return(data)
+
+
+
+
+
+
+
+
+
+
+
+
 '''
