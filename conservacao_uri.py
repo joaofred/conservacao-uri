@@ -27,6 +27,8 @@ from statsmodels.sandbox.stats.runs import mcnemar
 
 
 df = pd.read_csv("./URI_TOTAL_DATA.csv")
+dfposneg = pd.read_csv("./URI_TOTAL_POSNEG.csv")
+dfcontmelt2 = pd.read_csv("./posneg_sed.csv")
 
 ###########################################################
 
@@ -134,35 +136,19 @@ dfcont[["H0", "H4", "H8", "H12", "H24"]] = dfcont[["H0", "H4", "H8", "H12", "H24
 dfcontmelt = pd.melt(dfcont, id_vars=['KEY', 'EXAME', 'LOCAL']) 
 dfcontmelt.columns = ['KEY', 'EXAME', 'LOCAL', 'HORA', 'MEDIDA']
         
-def caixas():
-    for i in ["BAC", "RBC", "MUC", "CAOXD", "HYA", "PAT", "WBC", "EPI","TRI", "URI", "YEA", "AMO"]:
+def caixas(exames=["BAC", "RBC", "MUC", "CAOXD", "HYA", "PAT", "WBC", "EPI","TRI", "URI", "YEA", "AMO"]):
+    for i in exames:
         plt.clf()
         plt.close()
         filename = "boxplot"+i+".png"
         sns.boxplot(x="HORA", y="MEDIDA", hue="LOCAL", 
-                data=dfcontmelt[dfcontmelt.EXAME == i], palette="PRGn", sym="")
+                data=dfcontmelt[dfcontmelt.EXAME == i], palette="Blues", sym="")
         plt.savefig(filename)
-
 
 dfcate = df[df.EXAME.isin(["BLD", "BIL", "UBG", "KET", "GLU", "PRO", "NIT", 
                            "LEU","PH", "SG"])]
-
 dfcatemelt = pd.melt(dfcate, id_vars=['KEY', 'EXAME', 'LOCAL'])
 dfcatemelt.columns = ['KEY', 'EXAME', 'LOCAL', 'HORA', 'MEDIDA']
-
-#sns.factorplot(x="MEDIDA", kind="count", hue="HORA", 
-#               data=testesg, order = [1000,1005,1010,1015,1020,1025,1030])
-
-#sns.factorplot(x="MEDIDA", kind="count", hue="HORA", data=testesg, 
-#               order = sorted( testesg.MEDIDA.unique()))
-
-#sns.factorplot(x="MEDIDA", kind="count", hue="HORA", 
-#               data=dfcatemelt[dfcatemelt.EXAME == "SG"], 
-#               order = sorted(dfcatemelt[dfcatemelt.EXAME=="SG"].MEDIDA.unique()))
-
-#sns.factorplot(x="MEDIDA", kind="count", hue="HORA", 
-#               data=dfcatemelt[dfcatemelt.EXAME == "BLD"], 
-#               order = ["neg", "C1", "C2", "C3"])
 
 def plotsbarra(exames = ["BLD", "BIL", "UBG", "KET", "GLU", "PRO", "NIT", "LEU","PH"]):
     for i in exames:
@@ -176,7 +162,6 @@ def plotsbarra(exames = ["BLD", "BIL", "UBG", "KET", "GLU", "PRO", "NIT", "LEU",
                        data=dfcatemelt[dfcatemelt.EXAME == i], 
                        order = ordem)
         plt.savefig(filename)
-
 
 def procurarduplicatas():
     contador = 0
@@ -220,7 +205,6 @@ _dic_discreto = {namestr(ph_amb):"pH", namestr(ph_gel): "pH", namestr(sg_amb):"D
                  namestr(ubg_gel): "Urobilinogênio", namestr(bil_amb):"Bilirrubina", namestr(bil_gel): "Bilirrubina",
                  namestr(bld_amb): "Hemoglobina", namestr(bld_gel): "Hemoglobina"}
 
-
 '''    
 ################################################################################################
 
@@ -230,18 +214,12 @@ _dic_discreto = {namestr(ph_amb):"pH", namestr(ph_gel): "pH", namestr(sg_amb):"D
 '''
 fontetamanho = 20
 
-
-
-df2 = df[0:45].copy()
-#dfposneg = df.copy()
-dfposneg = pd.read_csv("./URI_TOTAL_POSNEG.csv")
 def isfloat(value):
     try:
         float(value)
         return True
     except: 
         return False
-
 
 def filtrasedimento(data):
     tamanho = len(data)
@@ -259,14 +237,6 @@ def filtrasedimento(data):
     return(data)
 
 #filtrasedimento(dfposneg)
-
-
-
-
-
-
-
-#yea_amb = filtrasedmini(yea_amb)
 
 def namestr(obj, namespace=globals()): return([name for name in namespace if namespace[name] is obj][0])
 
@@ -302,7 +272,6 @@ def grafico_l2(conjunto, xl=None, yl=None, titulox="", tituloy="", titulo="", fi
     sns.axlabel(titulox, tituloy, fontsize=fontetamanho)
     plt.savefig(filename);
 
-
 def graficos_jp(grupo):
     dic_horas = {"H4":"4h", "H8":"8h", "H12":"12h", "H24":"24h"}
     for i in grupo:
@@ -335,16 +304,6 @@ def graficos_lp(grupo):
 
 grupoo = [ph_amb]
 
-#graficos_lp(_grupo_discreto1)
-
-#grafico_l([ph_amb["H0"], ph_amb["H24"]], titulox = "Temperatura Ambiente (0h)", 
-#          tituloy = "Temperatura Ambiente (24h)", titulo="pH", filename = "")
-# "[AMO]_[GELxAMB]_[24x24].png" [0,4], [0,4],
-
-
-
-#graficos_jp(_grupo_continuo)
-
 ################################################################################################
 
 def meu_applymap(dataframe, dicionario):
@@ -375,7 +334,6 @@ def checar_normalidade():
         ku, pv = stats.normaltest(i["H0"].map(float))
         if pv > 0.05: p = "***"
         print(list(Series(i["EXAME"]))[0], "", list(Series(i["LOCAL"]))[0],"| Curtose:",ku,"; Valor de p:",pv, p)
-
 
 ################################################################################################
 
@@ -478,23 +436,6 @@ def checarkappa_csv_cis():
             novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
         relatorio.writerow(novalinha)
 
-dfcontmelt2 = pd.read_csv("./posneg_sed.csv")
-
-'''
-def checarkappa_csv_cis2(df=dfcontmelt2):
-    t = ["H0", "H4", "H8", "H12", "H24"]
-    relatorio = csv.writer(open("./resultados_kappa_cis2.csv", 'w'))
-    relatorio.writerow(["", "H0", "H4", "H8", "H12", "H24"])
-    for i in df:
-        loc, exa = list(i["LOCAL"])[0], list(i["EXAME"])[0]
-        abertura = exa+" "+loc+" | H0"
-        novalinha = [abertura]
-        for v in t:
-            k = [i["H0"], i[v]]
-            novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
-        relatorio.writerow(novalinha)
-'''
-
 def geraposneg(data = dfposneg):
     data = data[~((data.EXAME == "SG") | (data.EXAME == "PH"))]    
     listaposneg = []
@@ -517,21 +458,6 @@ def relatorio_kappa_csv():
             novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
         relatorio.writerow(novalinha)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def relatorio_spearman_csv():
     t = ["H0", "H4", "H8", "H12", "H24"]
     relatorio = csv.writer(open("./resultados_spearman_cis.csv", 'w'))
@@ -549,24 +475,6 @@ def relatorio_spearman_csv():
             novalinha.append(v[0])
         relatorio.writerow(novalinha)
         
-
-
-
-'''
-def checarkappa_csv_trans():
-    t = ["H0", "H4", "H8", "H12", "H24"]
-    relatorio = csv.writer(open("/home/fred/Dropbox/CC/DBs/URI/SOURCE/Relatórios/resultados_cis.csv", 'w'))
-    relatorio.writerow(["", "H0", "H4", "H8", "H12", "H24"])
-    for i in a_indice_cruzes_pares:
-        loc, exa = list(i["LOCAL"])[0], list(i["EXAME"])[0]
-        abertura = exa+" "+loc+" | H0"
-        novalinha = [abertura]
-        for v in t:
-            k = [i["H0"], i[v]]
-            novalinha.append(cohens_kappa(mycontingency(k, "neg")).kappa)
-        relatorio.writerow(novalinha)
-'''
-
 ################################################################################################
 
 def checarspearman(exame):
@@ -581,7 +489,6 @@ def checarspearman(exame):
 ##        print("Entre H0 e", i,":", resultado[0], "(Spearman r), e ", resultado[1],"(valor de p)", p)
 ##    print(___l)
     return(relatorio)
-
 
 def checarspearman_paralelo_(par):
     relatorio = []    
@@ -634,7 +541,6 @@ def checarspearman_todos():
     for i in lista:
         checarspearman(i)
 
-
 def relatorios():
     relatorio_spearman_csv()
     relatorio_kappa_csv()
@@ -653,11 +559,6 @@ a_indice_cruzes_pares = [[leu_amb, leu_gel], [nit_amb, nit_gel], [pro_amb, pro_g
 a_indice_fq = [[sg_amb, sg_gel], [ph_amb, ph_gel], [leu_amb, leu_gel], [nit_amb, nit_gel], [pro_amb, pro_gel],
            [glu_amb, glu_gel], [ket_amb, ket_gel], [ubg_amb, ubg_gel], [bil_amb, bil_gel], [bld_amb, bld_gel]]
 
-           
-
-# checarkappa1()
-
-
 '''
 ################################################################################################
                                           SEDIMENTO
@@ -667,105 +568,8 @@ a_indice_fq = [[sg_amb, sg_gel], [ph_amb, ph_gel], [leu_amb, leu_gel], [nit_amb,
 
 
 
-
-'''
-grafico_j([wbc_amb["H0"], wbc_amb["H4"]], titulox = "Temperatura Ambiente (0h)", 
-          tituloy = "Temperatura Ambiente (4h)", filename = "wbc_amb_0x4.jpg", tamanho=10)
-          #[0,15], [0,15],
-          #titulox = "Refrigerada (24h)", tituloy = "Temperatura Ambiente (24h)",
-'''
-
 '''
 ################################################################################################
                                            OUTROS
 ################################################################################################
-'''
-
-
-
-'''################################################################################################
-
-def checarmcnemar1(t="H24"):
-    print()
-    print(__l)
-    print()
-    print("Avaliação de McNemar",t,"(GEL) x",t,"(AMB) para os diversos exames")    
-    print()
-    print(__l)
-    for i in a_indice_cruzes_pares:
-        p, p1 = i[0], ""
-        k = [i[0][t], i[1][t]]
-        mc = mcnemar(mycontingency(k, "neg"))
-        if mc[1] < 0.05: p1 = "***"
-        print("RESULTADOS PARA ", list(Series(p["EXAME"]))[0], ":", mc[0],"(X²); ",mc[1],"(valor de p)", p1)
-    print(__l)
-
-def checarmcnemar2(t="H24"):
-    print()
-    print(__l)
-    print()
-    print("Avaliação de McNemar H0 x",t,"para os diversos exames")    
-    print()
-    print(__l)
-    for i in a_indice_cruzes_pares:        
-        p, p1, p2 = i[0], "", ""
-        k = [i[0]["H0"], i[0][t]]
-        l = [i[1]["H0"], i[1][t]]
-        mc1 = mcnemar(mycontingency(k, "neg"))        
-        mc2 = mcnemar(mycontingency(l, "neg"))
-        if mc1[1] < 0.05: p1 = "***"
-        if mc2[1] < 0.05: p2 = "***"
-        print("RESULTADOS PARA", list(Series(p["EXAME"]))[0], "(AMB):", 
-                                              mc1[0],"(X²); ",mc1[1],"(valor de p)", p1)
-        print("RESULTADOS PARA", list(Series(p["EXAME"]))[0], "(GEL):",
-                                              mc2[0],"(X²); ",mc2[1],"(valor de p)", p2)
-    print(__l)
-
-
-
-
-
-def filtrased1(data, linha):
-    amostra = data._slice(slice(linha,linha+1))
-    if list(amostra.EXAME)[0] in _dicsed:
-        if list(amostra.MEDIDA)[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
-        elif list(amostra.MEDIDA)[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
-        else: print("deu erro em", amostra.index)
-    else: return(list(amostra.MEDIDA)[0])
-
-def filtrasedmini1(data, linha, horario):
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",linha)
-    #amostra = data._slice(slice(linha,linha+1))
-    amostra = data[horario][linha]
-    if list(data.EXAME)[0] in _dicsed:
-        print("OK!")
-        if list(amostra[horario])[0] < _dicsed[list(amostra.EXAME)[0]]: return("neg")
-        elif list(amostra[horario])[0] >= _dicsed[list(amostra.EXAME)[0]]: return("pos")
-        else: print("deu erro em", amostra.index)
-    else: return(list(amostra[hora])[0])
-
-#filtrasedmini1(yea_amb, 42, "H0")
-
-def filtrased(data):
-    for i in data.index:
-        data.MEDIDA[i] = filtrased1(data, i)
-    return(data)
-
-def filtrasedmini(data):
-    for indice in data.index[0:10]:
-        for hora in ["H0", "H4", "H8", "H12", "H24"]:    
-            data[hora][indice] = filtrasedmini1(data, indice, hora)
-    return(data)
-
-
-
-
-
-
-
-
-
-
-
-
 '''
