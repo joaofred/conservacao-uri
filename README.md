@@ -21,7 +21,7 @@
 
 <h6>Descrição</h6>
 <p align = "justify">
-Os scripts apresentados visam solucionar dois problemas enfrentados em nossa pesquisa, a saber: a semi-automação da entrada dos dados, cuja origem são laudos impressos, e a produção de relatórios e gráficos que compõem a descrição e exposição dos dados, bem como os testes estatísticos de correlação (rô de Spearman) e concordância (capa de Cohen). Esperamos que este trabalho possa servir de apoio a outros colegas pesquisadores em busca de soluções para problemas análogos, ou mesmo que funções inteiras possam ser incorporadas em seus trabalhos. Com a documentação do código (no momento ainda incompleta), seu uso e reciclagem poderão beneficiar outros grupos. Estamos à disposição para quaisquer dúvidas.<br>
+Os scripts apresentados visam solucionar dois problemas enfrentados em nossa pesquisa dentro do Laboratório de Patologia Clínica (LPC) do HC/UNICAMP, a saber: a semi-automação da entrada dos dados, cuja origem são laudos impressos, e a produção de relatórios e gráficos que compõem a descrição e exposição dos dados, bem como os testes estatísticos de correlação (rô de Spearman) e concordância (capa de Cohen). Esperamos que este trabalho possa servir de apoio a outros colegas pesquisadores em busca de soluções para problemas análogos, ou mesmo que funções inteiras possam ser incorporadas em seus trabalhos. Com a documentação do código (no momento ainda incompleta), seu uso e reciclagem poderão beneficiar outros grupos. Estamos à disposição para quaisquer dúvidas.<br>
 </p>
 
 </body>
