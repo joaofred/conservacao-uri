@@ -1,1 +1,4 @@
---- teste ---
+<b>Preservação de amostras para urinálise</b>
+
+- conservacao_uri.py : script que gera relatórios e gráficos de urinálise.
+- tesser.py : script que automatiza leitura (OCR) de laudos de urinálise.
